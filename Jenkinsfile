@@ -21,7 +21,8 @@ pipeline {
                         bat "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
                     }
                 }
-        }
+            } // <-- Closing curly brace for the 'Login to Docker Hub' stage
+        } // <-- Closing curly brace for the 'Login to Docker Hub' stage
 
         stage('Build Docker Image') {
             steps {
