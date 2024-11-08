@@ -16,11 +16,10 @@ pipeline {
         stage('Login to Docker Hub') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        bat '''
-                        echo %DOCKER_PASSWORD% | docker login -u %DOCKER_USERNAME% --password-stdin
-                        '''
-                    }
+                    // Hardcode the Docker username and password directly in the Jenkinsfile
+                    bat '''
+                    echo 123password | docker login -u saikrishnanr942 --password-stdin
+                    '''
                 }
             }
         }
@@ -28,6 +27,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
+                    // Build Docker image
                     docker.build("${DOCKER_REGISTRY}/${DOCKER_IMAGE}")
                 }
             }
@@ -36,6 +36,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
+                    // Run tests inside the container
                     docker.image("${DOCKER_REGISTRY}/${DOCKER_IMAGE}").inside {
                         bat 'pytest --maxfail=1 --disable-warnings -v'
                     }
@@ -46,6 +47,7 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
+                    // Push Docker image to the registry
                     bat 'docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}'
                 }
             }
