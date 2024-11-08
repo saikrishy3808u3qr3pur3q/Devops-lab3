@@ -18,7 +18,7 @@ pipeline {
                 script {
                     // Hardcode Docker username and password directly in the Jenkinsfile
                     bat '''
-                    echo dckr_pat_YRmesfONH5o98-W_Wl3kgePsPhg | docker login -u saikrishnanr942 --password-stdin
+                    echo dckr_pat_RXHbMyrM8jaBj9hP9EsQECHbP-U | docker login -u saikrishnanr942 --password-stdin
                     '''
                 }
             }
