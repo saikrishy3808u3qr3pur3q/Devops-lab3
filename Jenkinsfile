@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'python-docker-jenkins'
-        DOCKER_REGISTRY = 'docker.io'  // Change to your Docker registry if needed
+        DOCKER_REGISTRY = 'docker.io'  // Use Docker Hub or a different registry if needed
     }
 
     stages {
@@ -16,7 +16,7 @@ pipeline {
         stage('Login to Docker Hub') {
             steps {
                 script {
-                    // Hardcode the Docker username and password directly in the Jenkinsfile
+                    // Hardcode Docker username and password directly in the Jenkinsfile
                     bat '''
                     echo 123password | docker login -u saikrishnanr942 --password-stdin
                     '''
@@ -27,8 +27,8 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Build Docker image
-                    docker.build("${DOCKER_REGISTRY}/${DOCKER_IMAGE}")
+                    // Build Docker image with the correct tag (latest)
+                    bat "docker build -t ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest ."
                 }
             }
         }
@@ -37,9 +37,7 @@ pipeline {
             steps {
                 script {
                     // Run tests inside the container
-                    docker.image("${DOCKER_REGISTRY}/${DOCKER_IMAGE}").inside {
-                        bat 'pytest --maxfail=1 --disable-warnings -v'
-                    }
+                    bat "docker run ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest pytest --maxfail=1 --disable-warnings -v"
                 }
             }
         }
@@ -48,7 +46,7 @@ pipeline {
             steps {
                 script {
                     // Push Docker image to the registry
-                    bat 'docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}'
+                    bat "docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest"
                 }
             }
         }
