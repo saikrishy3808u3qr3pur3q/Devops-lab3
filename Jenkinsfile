@@ -3,8 +3,7 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'python-docker-jenkins'
-        DOCKER_REGISTRY = 'docker.io'  // Default Docker registry, update if you're using another registry
-        DOCKER_CREDENTIALS = credentials('docker-hub-credentials') // Name of your Docker credentials in Jenkins
+        DOCKER_REGISTRY = 'docker.io'  // Change to your Docker registry if needed
     }
 
     stages {
@@ -17,8 +16,10 @@ pipeline {
         stage('Login to Docker Hub') {
             steps {
                 script {
-                    // Log in to Docker Hub using the credentials from Jenkins
-                    sh 'echo $DOCKER_CREDENTIALS_PSW | docker login -u $DOCKER_CREDENTIALS_USR --password-stdin'
+                    // Login to Docker Hub using the docker-hub-credentials (username/password combined)
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        bat 'echo %DOCKER_PASSWORD% | docker login -u %DOCKER_USERNAME% --password-stdin'
+                    }
                 }
             }
         }
@@ -26,8 +27,8 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Build Docker image, specify the base image if needed
-                    docker.build(DOCKER_IMAGE, '.')
+                    // Build Docker image
+                    docker.build("${DOCKER_REGISTRY}/${DOCKER_IMAGE}")
                 }
             }
         }
@@ -35,10 +36,19 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    // Run tests inside the container using pytest
-                    docker.image(DOCKER_IMAGE).inside {
-                        sh 'pytest --maxfail=1 --disable-warnings -v'
+                    // Run tests inside the container using bat instead of sh (for Windows compatibility)
+                    docker.image("${DOCKER_REGISTRY}/${DOCKER_IMAGE}").inside {
+                        bat 'pytest --maxfail=1 --disable-warnings -v'
                     }
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    // Push the Docker image to the registry
+                    bat 'docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}'
                 }
             }
         }
@@ -46,8 +56,7 @@ pipeline {
 
     post {
         always {
-            // Clean up workspace after the build
-            cleanWs()
+            cleanWs() // Clean workspace after the job finishes
         }
     }
 }
