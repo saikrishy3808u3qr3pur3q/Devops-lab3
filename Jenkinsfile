@@ -15,12 +15,13 @@ pipeline {
 
         stage('Login to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                    script {
-                        // Log in to Docker Hub to increase pull rate limit
-                        bat "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
-                    }
+                script {
+                    // Hardcode Docker username and password directly in the Jenkinsfile
+                    bat '''
+                    echo dckr_pat_YRmesfONH5o98-W_Wl3kgePsPhg | docker login -u saikrishnanr942 --password-stdin
+                    '''
                 }
+            }
         }
 
         stage('Build Docker Image') {
