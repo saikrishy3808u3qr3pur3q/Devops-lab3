@@ -14,15 +14,17 @@ pipeline {
         }
 
         stage('Login to Docker Hub') {
-            steps {
-                script {
-                    // Hardcode Docker username and password directly in the Jenkinsfile
-                    bat '''
-                    echo dckr_pat_RXHbMyrM8jaBj9hP9EsQECHbP-U | docker login -u saikrishnanr942 --password-stdin
-                    '''
-                }
+    steps {
+        withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+            script {
+                // Docker login with password securely passed via stdin
+                bat """
+                echo | set /p dummy=$DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+                """
             }
         }
+    }
+}
 
         stage('Build Docker Image') {
             steps {
